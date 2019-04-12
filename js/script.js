@@ -1,8 +1,8 @@
 (function(){ 
 document.addEventListener('DOMContentLoaded', function() {
     // here we will put the code of our application
-    document.getElementById('board');
-});
+    
+
 
 //Create ID
 function randomString() {
@@ -12,6 +12,15 @@ function randomString() {
         str += chars[Math.floor(Math.random() * chars.length)];
     }
     return str;
+}
+
+function randomColor() {
+  var chars = '0123456789abcdef';
+  var str = '#';
+  for (var i = 0; i < 6; i++) {
+      str += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return str;
 }
 
 function generateTemplate(name, data, basicElement) {
@@ -29,14 +38,16 @@ function Column(name) {
   
     this.id = randomString();
     this.name = name;
+    this.color = randomColor();
     this.element = generateTemplate('column-template', { name: this.name, id: this.id });
+  
     //Remove column
     this.element.querySelector('.column').addEventListener('click', function (event) {
       if (event.target.classList.contains('btn-delete')) {
         self.removeColumn();
       }
       if (event.target.classList.contains('add-card')) {
-        self.addCard(new Card(prompt("Enter the name of the card")));
+        self.addCard(new Card(prompt("Enter the name of the card"), self.color));
       }
     });
   }
@@ -50,12 +61,14 @@ Column.prototype = {
     }
 };
 //Add card
-function Card(description) {
+function Card(description, color) {
     var self = this;
-  
+    this.color = color;
     this.id = randomString();
     this.description = description;
     this.element = generateTemplate('card-template', { description: this.description }, 'li');
+    this.element.querySelector(".card").style.backgroundColor = this.color;
+
     // Remove card
     this.element.querySelector('.card').addEventListener('click', function (event) {
         event.stopPropagation();
@@ -76,17 +89,20 @@ var board = {
     name: 'Kanban Board',
     addColumn: function(column) {
       this.element.appendChild(column.element);
-      initSortable(column.id); 
+      initSortable(column.id, column.color); 
     },
     element: document.querySelector('#board .column-container')
 };
 
 //Implementation sortable
-function initSortable(id) {
+function initSortable(id, color) {
     var el = document.getElementById(id);
     var sortable = Sortable.create(el, {
       group: 'kanban',
-      sort: true
+      sort: true,
+      onAdd: function(target){
+       target.item.querySelector(".card").style.backgroundColor = color;
+      }
     });
   }
 //Add a new column to board
@@ -113,5 +129,5 @@ var card2 = new Card('Create kanban boards');
 // ADDING CARDS TO COLUMNS
 todoColumn.addCard(card1);
 doingColumn.addCard(card2);*/
-
+});
 })(); 
